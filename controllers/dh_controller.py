@@ -6,8 +6,8 @@ class DHController:
     def __init__(self):
         pass
 
-    def generar_dh(self, input_dir, output_dir):
-        """Genera los archivos DH en el directorio de salida"""
+    def generar_dh(self, input_dir, output_dir, file_format):
+        """Genera los archivos DH en el directorio de salida en el formato especificado"""
         logging.info(f"Generación de archivos DH iniciada. Directorio de entrada: {input_dir}, Directorio de salida: {output_dir}")
 
         if not os.path.exists(input_dir):
@@ -26,9 +26,9 @@ class DHController:
             file_extensions = ['2.seg2', '3.seg2']  # Archivos para los canales X e Y
 
             # Procesar los archivos DH y guardar en el directorio de salida
-            process_files_dh(input_dir, file_extensions_vertical, file_extensions, output_dir)
+            process_files_dh(input_dir, file_extensions_vertical, file_extensions, output_dir, file_format)
 
-            logging.info("Generación de archivos DH completada con éxito.")
+            logging.info(f"Generación de archivos DH completada con éxito en formato {file_format}.")
         except Exception as e:
             logging.error(f"Error al generar archivos DH: {str(e)}")
             raise e

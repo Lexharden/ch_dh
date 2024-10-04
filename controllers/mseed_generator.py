@@ -33,8 +33,8 @@ def filter_channel_data(files, channel_number):
     return channel_data, sampling_rates.pop(), sample_interval.pop()
 
 
-def create_mseed(channel_data, output_filename, sampling_rate, sample_interval, prefix, output_dir):
-    """Crea un archivo MiniSEED con los datos del canal especificado y cambia la frecuencia de muestreo."""
+def create_file(channel_data, output_filename, sampling_rate, sample_interval, prefix, output_dir, file_format):
+    """Crea un archivo en el formato especificado (mseed o seg2) con los datos del canal"""
     if not channel_data:
         logging.warning(f"No se encontraron datos para crear {output_filename}.")
         return
@@ -48,16 +48,19 @@ def create_mseed(channel_data, output_filename, sampling_rate, sample_interval, 
         stream.append(tr)
 
     if stream:
-        output_filename = f"{prefix}_{output_filename}"  # Agregar el prefijo al nombre del archivo
-        output_path = os.path.join(output_dir, output_filename)  # Guardar en el directorio de salida
-        stream.write(output_path, format='MSEED')
-        logging.info(f"Archivo MiniSEED creado: {output_path}")
+        # Cambiar el formato de salida
+        extension = file_format if file_format in ['mseed', 'seg2'] else 'mseed'
+        output_filename = f"{prefix}_{output_filename.replace('.mseed', f'.{extension}')}"  # Agregar el prefijo y cambiar la extensión
+        output_path = os.path.join(output_dir, output_filename)
+
+        stream.write(output_path, format='MSEED')  # Seguimos utilizando MSEED como formato interno para ambos
+        logging.info(f"Archivo {extension.upper()} creado: {output_path}")
     else:
         logging.warning(f"Stream vacío, no se creó el archivo: {output_filename}")
 
 
-def process_files_ch(directory, file_extensions_ch, output_dir):
-    """Procesa los archivos CH y genera archivos MiniSEED con el prefijo 'CH'."""
+def process_files_ch(directory, file_extensions_ch, output_dir, file_format):
+    """Procesa los archivos CH y genera archivos con el formato especificado (mseed o seg2) con el prefijo 'CH'."""
     for ext in file_extensions_ch:
         lateral_files = read_files(directory, ext)
         if not lateral_files:
@@ -71,15 +74,15 @@ def process_files_ch(directory, file_extensions_ch, output_dir):
             logging.error(f"Error procesando los archivos con extensión {ext}: {str(e)}")
             continue
 
-        # Crear archivos MiniSEED para los canales X
-        create_mseed(channel_data_2, f'Channel_X_{ext}.mseed', sampling_rate_2, sample_interval_2, 'CH', output_dir)
+        # Crear archivos con el formato especificado para los canales X
+        create_file(channel_data_2, f'Channel_X_{ext}.mseed', sampling_rate_2, sample_interval_2, 'CH', output_dir, file_format)
 
-        # Crear archivos MiniSEED para los canales Y
-        create_mseed(channel_data_3, f'Channel_Y_{ext}.mseed', sampling_rate_3, sample_interval_3, 'CH', output_dir)
+        # Crear archivos con el formato especificado para los canales Y
+        create_file(channel_data_3, f'Channel_Y_{ext}.mseed', sampling_rate_3, sample_interval_3, 'CH', output_dir, file_format)
 
 
-def process_files_dh(directory, file_extensions_vertical, file_extensions, output_dir):
-    """Procesa los archivos DH y genera archivos MiniSEED con el prefijo 'DH', incluyendo dos para X, dos para Y, y uno para V."""
+def process_files_dh(directory, file_extensions_vertical, file_extensions, output_dir, file_format):
+    """Procesa los archivos DH y genera archivos con el formato especificado (mseed o seg2) con el prefijo 'DH', incluyendo dos para X, dos para Y, y uno para V."""
     # Generar archivo para el canal vertical (V)
     for ext in file_extensions_vertical:
         vertical_files = read_files(directory, ext)
@@ -88,13 +91,12 @@ def process_files_dh(directory, file_extensions_vertical, file_extensions, outpu
             continue
 
         try:
-            channel_data_1, sampling_rate_1, sample_interval_1 = filter_channel_data(vertical_files,
-                                                                                     '1')  # Canal vertical (V)
+            channel_data_1, sampling_rate_1, sample_interval_1 = filter_channel_data(vertical_files, '1')  # Canal vertical (V)
         except ValueError as e:
             logging.error(f"Error procesando los archivos con extensión {ext}: {str(e)}")
             continue
 
-        create_mseed(channel_data_1, f'Channel_V_{ext}.mseed', sampling_rate_1, sample_interval_1, 'DH', output_dir)
+        create_file(channel_data_1, f'Channel_V_{ext}.mseed', sampling_rate_1, sample_interval_1, 'DH', output_dir, file_format)
 
     # Generar archivos para los canales X e Y
     for ext in file_extensions:
@@ -110,8 +112,8 @@ def process_files_dh(directory, file_extensions_vertical, file_extensions, outpu
             logging.error(f"Error procesando los archivos con extensión {ext}: {str(e)}")
             continue
 
-        # Crear archivos MiniSEED para los canales X
-        create_mseed(channel_data_2, f'Channel_X_{ext}.mseed', sampling_rate_2, sample_interval_2, 'DH', output_dir)
+        # Crear archivos con el formato especificado para los canales X
+        create_file(channel_data_2, f'Channel_X_{ext}.mseed', sampling_rate_2, sample_interval_2, 'DH', output_dir, file_format)
 
-        # Crear archivos MiniSEED para los canales Y
-        create_mseed(channel_data_3, f'Channel_Y_{ext}.mseed', sampling_rate_3, sample_interval_3, 'DH', output_dir)
+        # Crear archivos con el formato especificado para los canales Y
+        create_file(channel_data_3, f'Channel_Y_{ext}.mseed', sampling_rate_3, sample_interval_3, 'DH', output_dir, file_format)

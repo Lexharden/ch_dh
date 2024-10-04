@@ -4,7 +4,7 @@ from views.main_view import MainView
 
 def main():
     root = tk.Tk()
-    root.geometry('550x150')
+    root.geometry('550x250')
     root.resizable(False, False)
 
     _ = MainView(root)
