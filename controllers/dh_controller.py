@@ -2,13 +2,15 @@ import os
 import logging
 from controllers.mseed_generator import process_files_dh
 
+
 class DHController:
     def __init__(self):
         pass
 
     def generar_dh(self, input_dir, output_dir, file_format):
         """Genera los archivos DH en el directorio de salida en el formato especificado"""
-        logging.info(f"Generación de archivos DH iniciada. Directorio de entrada: {input_dir}, Directorio de salida: {output_dir}")
+        logging.info(
+            f"Generación de archivos DH iniciada. Directorio de entrada: {input_dir}, Directorio de salida: {output_dir}")
 
         if not os.path.exists(input_dir):
             error_message = f"El directorio de entrada no existe: {input_dir}"
